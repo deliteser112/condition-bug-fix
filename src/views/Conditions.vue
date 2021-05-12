@@ -54,7 +54,7 @@
                   <div class="overflow-div">
                     <div class="wrap-modal">
                       <div class="modal__cancelation">
-                        <select class="form-control">
+                        <select class="form-control" @change="onChange($event)">
                           <option
                             v-for="(option, index) in options"
                             :key="index"
@@ -66,7 +66,7 @@
                         <div class="div-content-wrap">
                           <div
                             class="row fwp"
-                            v-for="(cancel, index) in cancelaciones"
+                            v-for="(cancel, index) in newGroup"
                             :key="index"
                             :value="`cancel_option_${cancel.opcion}`"
                           >
@@ -1095,6 +1095,8 @@ export default {
       selectedOccup: "",
       options: {},
       cancelaciones: [{ dias: "", tipoDescuento: "", valor: "" }],
+      cus_cancelation: [],
+      newGroup:[],
       ocupaciones: [{ maxAdultos: "", maxNinos: "", numeroPersonas: "" }],
       tarifas: [
         {
@@ -1179,6 +1181,9 @@ export default {
     this.typesMoney = response5.data;
 
     this.getData();
+
+    let keyValue = "option_1"
+    this.groupData(keyValue)
   },
   updated: function () {
     this.$nextTick(function () {
@@ -1189,7 +1194,27 @@ export default {
     title: "Condiciones",
     titleTemplate: "%s - Viaja y Descubre",
   },
+  mounted(){
+
+  },
   methods: {
+    onChange(event){
+      let keyValue = event.target.value.replace('cancel_', '')
+      this.groupData(keyValue)
+    },
+    groupData(keyValue){
+      let flag = false
+      for(let r in this.cus_cancelation){
+        if(r == keyValue){
+          flag = true
+          for(let c in this.cus_cancelation[r]){
+            this.newGroup = this.cus_cancelation[r][c]
+          }
+        }
+      }
+      if(!flag) this.newGroup = []
+
+    },
     async getData() {
       this.linksGeneration(this.$route.params.id, this.menuname);
       const fisrtOptionId = this.options[0].id;
@@ -1340,7 +1365,13 @@ export default {
         acc[`option_${item.opcion}`].push(item);
         return acc;
       }, {});
-      console.log(cancelGroup);
+
+      for(let r in cancelGroup){
+        this.cus_cancelation[r] = this.cus_cancelation[r] || []
+        this.cus_cancelation[r].push(cancelGroup[r])
+      } 
+
+      console.log("THis is my value:", this.cus_cancelation)
 
       let newTarifas = [];
       for (let j = 0; j < this.options.length; j++) {
