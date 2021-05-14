@@ -165,7 +165,7 @@
                           </div>
                           <div class="mt-20">
                             <button
-                              @click="$modal.hide('modal_cancelation')"
+                              @click="createTable"
                               type="button"
                               class="btn btn--blue"
                             >
@@ -189,7 +189,12 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <v-collapse-group :onlyOneActive="true">
+              
+                      <v-collapse-group 
+                        :onlyOneActive="true"
+                        v-for="(eRow, index) in cTable"
+                        :key="index"
+                      >
                         <tr>
                           <td colspan="5" class="p-0 brd-0">
                             <v-collapse-wrapper
@@ -202,6 +207,7 @@
                                       <button
                                         type="button"
                                         class="btn__expando-row link-button"
+                                        @click="toggle_rotate($event)"
                                       >
                                         <svg
                                           version="1.1"
@@ -220,12 +226,16 @@
                                           focusable="false"
                                           class="icon-xs fill-primary arrow-svg"
                                         >
+                                      
                                           <g>
                                             <path
                                               d="M225.923,354.706c-8.098,0-16.195-3.092-22.369-9.263L9.27,151.157c-12.359-12.359-12.359-32.397,0-44.751c12.354-12.354,32.388-12.354,44.748,0l171.905,171.915l171.906-171.909c12.359-12.354,32.391-12.354,44.744,0c12.365,12.354,12.365,32.392,0,44.751L248.292,345.449C242.115,351.621,234.018,354.706,225.923,354.706z"
                                             />
                                           </g>
                                         </svg>
+                                        <!-- <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" v-if="activeCollapse"><path d="M0 16.67l2.829 2.83 9.175-9.339 9.167 9.339 2.829-2.83-11.996-12.17z"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" v-if="!activeCollapse"><path d="M0 7.33l2.829-2.83 9.175 9.339 9.167-9.339 2.829 2.83-11.996 12.17z"/></svg> -->
+                                        {{eRow.title}}
                                       </button>
                                     </div>
                                   </td>
@@ -237,22 +247,31 @@
                                       v-collapse-content
                                     >
                                       <template>
-                                        <tr class="tablerow-js">
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
+                                        <tr 
+                                          class="tablerow-js"
+                                          v-for="(tRow, idx) in eRow.t_data"
+                                          :key="idx"
+                                        >
+
+                                          <td style="width:30px!important"></td>
+                                          <td style="width:30px!important">{{tRow.dias}}</td>
+                                          <td style="width:30px!important">{{tRow.moneda}}</td>
+                                          <td style="width:30px!important">{{tRow.tipo}}</td>
+                                          <td style="width:30px!important">{{tRow.valor}}</td>
                                         </tr>
                                       </template>
                                     </div>
                                   </td>
                                 </tr>
+
+                                
                               </table>
                             </v-collapse-wrapper>
                           </td>
                         </tr>
                       </v-collapse-group>
+
+
                     </tbody>
                   </table>
                 </div>
@@ -471,7 +490,7 @@
                   <div class="overflow-div">
                     <div class="wrap-modal">
                       <div class="modal__child-rates">
-                        <select class="form-control">
+                        <select class="form-control" @change="onChangeTarifas($event)">
                           <option
                             v-for="(option, index) in options"
                             :key="index"
@@ -480,10 +499,10 @@
                             {{ option.nombre }}
                           </option>
                         </select>
-                        <div class="div-content-wrap">
+                        <div class="div-content-wrap" ref="ref_tarifas">
                           <div
                             class="row fwp"
-                            v-for="(tarifa, index) in tarifas"
+                            v-for="(tarifa, index) in newTarifasGroup"
                             :key="index"
                             :value="`child-rates_option_${tarifa.opcion}`"
                           >
@@ -619,7 +638,7 @@
                         </div>
                         <div class="mt-20">
                           <button
-                            @click="$modal.hide('modal_child_rates')"
+                            @click="createTableTarifas"
                             type="button"
                             class="btn btn--blue"
                           >
@@ -642,7 +661,12 @@
                         <th>Valor</th>
                       </tr>
                     </thead>
-                    <v-collapse-group :onlyOneActive="true">
+
+                    <v-collapse-group 
+                      :onlyOneActive="true"
+                      v-for="(eRow, index) in cTableTarifas"
+                      :key="index"
+                    >
                       <tr>
                         <td colspan="6" class="p-0 brd-0">
                           <v-collapse-wrapper
@@ -655,6 +679,7 @@
                                     <button
                                       type="button"
                                       class="btn__expando-row link-button"
+                                      @click="toggle_rotate($event)"
                                     >
                                       <svg
                                         version="1.1"
@@ -679,6 +704,7 @@
                                           />
                                         </g>
                                       </svg>
+                                      {{eRow.title}}
                                     </button>
                                   </div>
                                 </td>
@@ -690,13 +716,18 @@
                                     v-collapse-content
                                   >
                                     <template>
-                                      <tr class="tablerow-js">
+
+                                      <tr 
+                                        class="tablerow-js"
+                                        v-for="(tRow, idx) in eRow.t_data"
+                                        :key="idx"
+                                      >
                                         <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td>{{tRow.edadDesde}}</td>
+                                        <td>{{tRow.edadHasta}}</td>
+                                        <td>{{tRow.moneda}}</td>
+                                        <td>{{tRow.tipoDescuento}}</td>
+                                        <td>{{tRow.valor}}</td>
                                       </tr>
                                     </template>
                                   </div>
@@ -777,19 +808,27 @@
                 <fieldset>
                   <legend>Cargos incluidos</legend>
                   <p>Establece los cargos para todas las opciones</p>
-                  <div class="div-content-wrap">
+                  <div class="div-content-wrap" ref="ref_incluidos">
                     <div
                       class="row fwp mb-10"
                       :id="`chargues-included_option_${index}`"
-                      v-for="(incluido, index) in incluidos"
+                      v-for="(incluido, index) in $v.incluidos.$each.$iter"
                       :key="index"
                     >
-                      <div class="form-group mr-20">
+                      <div 
+                        class="form-group mr-20"
+                        :class="[
+                          'mb-10',
+                          { 'form-group--error': incluido.cargo.$error },
+                        ]"
+                      >
+         
                         <label class="semi-bold label-form">Cargo</label>
                         <select
                           name="option"
                           class="form-control"
-                          v-model="incluido.cargo"
+                          v-model.trim="incluido.cargo.$model"
+                          @blur="incluido.cargo.$touch"
                         >
                           <option
                             v-for="(typeCharge, index) in typesCharge"
@@ -799,10 +838,40 @@
                             {{ typeCharge.nombre }}
                           </option>
                         </select>
+
+                        <p
+                          v-if="incluido.cargo.$error && !incluido.cargo.required"
+                          class="validation-error"
+                        >
+                          Error de entrada
+                        </p>
+
+                        <p
+                          v-if="incluido.cargo.$error && !incluido.cargo.isUnique"
+                          class="validation-error"
+                        >
+                          Error duplicado
+                        </p>
+
+                        <p v-else-if="error" class="validation-error">
+                          {{ error }}
+                        </p>
                       </div>
-                      <div class="form-group mr-20">
+
+                      <div 
+                        class="form-group mr-20"
+                        :class="[
+                          'mb-10',
+                          { 'form-group--error': incluido.moneda.$error },
+                        ]"
+                      >
+
                         <label class="semi-bold label-form">Moneda</label>
-                        <select class="form-control" v-model="incluido.moneda">
+                        <select 
+                          class="form-control" 
+                          v-model.trim="incluido.moneda.$model"
+                          @blur="incluido.moneda.$touch"
+                        >
                           <option
                             v-for="(typeMoney, index) in typesMoney"
                             :key="index"
@@ -811,12 +880,29 @@
                             {{ typeMoney }}
                           </option>
                         </select>
+                        <p
+                          v-if="incluido.moneda.$error && !incluido.moneda.required"
+                          class="validation-error"
+                        >
+                          Error de entrada
+                        </p>
+                        <p v-else-if="error" class="validation-error">
+                          {{ error }}
+                        </p>
                       </div>
-                      <div class="form-group mr-20">
+                      <div 
+                        class="form-group mr-20"
+                        :class="[
+                          'mb-10',
+                          { 'form-group--error': incluido.tipoDescuento.$error },
+                        ]"
+                      >
+
                         <label class="semi-bold label-form">Tipo</label>
                         <select
                           class="form-control"
-                          v-model="incluido.tipoDescuento"
+                          v-model.trim="incluido.tipoDescuento.$model"
+                          @blur="incluido.tipoDescuento.$touch"
                         >
                           <option
                             v-for="(typeDiscount, index) in typesDiscount"
@@ -826,22 +912,57 @@
                             {{ typeDiscount }}
                           </option>
                         </select>
+                        <p
+                          v-if="incluido.tipoDescuento.$error && !incluido.tipoDescuento.required"
+                          class="validation-error"
+                        >
+                          Error de entrada
+                        </p>
+                        <p v-else-if="error" class="validation-error">
+                          {{ error }}
+                        </p>
                       </div>
-                      <div class="form-group mr-20">
+                      <div 
+                        class="form-group mr-20"
+                        :class="[
+                          'mb-10',
+                          { 'form-group--error': incluido.valor.$error },
+                        ]"
+                      >
+
+
                         <label class="semi-bold label-form">Valor</label>
                         <input
                           type="number"
                           min="0"
                           class="form-control wd-100"
                           placeholder="Ej: 25000"
-                          v-model="incluido.valor"
+                          v-model.trim="incluido.valor.$model"
+                          @blur="incluido.valor.$touch"
                         />
+                        <p
+                          v-if="incluido.valor.$error && !incluido.valor.required"
+                          class="validation-error"
+                        >
+                          Error de entrada
+                        </p>
+                        <p v-else-if="error" class="validation-error">
+                          {{ error }}
+                        </p>
                       </div>
-                      <div class="form-group">
+                      <div 
+                        class="form-group"
+                        :class="[
+                          'mb-10',
+                          { 'form-group--error': incluido.descripcion.$error },
+                        ]"
+                      >
+                      
                         <label class="semi-bold label-form">Descripción</label>
                         <select
                           class="form-control"
-                          v-model="incluido.descripcion"
+                          v-model.trim="incluido.descripcion.$model"
+                          @blur="incluido.descripcion.$touch"
                         >
                           <option
                             v-for="(
@@ -849,10 +970,20 @@
                             ) in descriptionsCharge"
                             :key="index"
                             :value="descriptionCharge.nombre"
+                            
                           >
                             {{ descriptionCharge.nombre }}
                           </option>
                         </select>
+                        <p
+                          v-if="incluido.descripcion.$error && !incluido.descripcion.required"
+                          class="validation-error"
+                        >
+                          Error de entrada
+                        </p>
+                        <p v-else-if="error" class="validation-error">
+                          {{ error }}
+                        </p>
                         <svg
                           v-if="index > 0"
                           height="512pt"
@@ -893,19 +1024,26 @@
                 <fieldset>
                   <legend>Cargos no incluidos</legend>
                   <p>Establece los cargos para todas las opciones</p>
-                  <div class="div-content-wrap">
+                  <div class="div-content-wrap" ref="ref_noIncluidos">
                     <div
                       class="row fwp mb-10"
                       :id="`chargues-no-included_option_${index}`"
-                      v-for="(noIncluido, index) in noIncluidos"
+                      v-for="(noIncluido, index) in $v.noIncluidos.$each.$iter"
                       :key="index"
                     >
-                      <div class="form-group mr-20">
+                      <div 
+                        class="form-group mr-20"
+                        :class="[
+                          'mb-10',
+                          { 'form-group--error': noIncluido.cargo.$error },
+                        ]"
+                      >
                         <label class="semi-bold label-form">Cargo</label>
                         <select
                           name="option"
                           class="form-control"
-                          v-model="noIncluido.cargo"
+                          v-model.trim="noIncluido.cargo.$model"
+                          @blur="noIncluido.cargo.$touch"
                         >
                           <option
                             v-for="(typeCharge, index) in typesCharge"
@@ -915,12 +1053,38 @@
                             {{ typeCharge.nombre }}
                           </option>
                         </select>
+
+                        <p
+                          v-if="noIncluido.cargo.$error && !noIncluido.cargo.required"
+                          class="validation-error"
+                        >
+                          Error de entrada
+                        </p>
+
+                        <p
+                          v-if="noIncluido.cargo.$error && !noIncluido.cargo.isUnique"
+                          class="validation-error"
+                        >
+                          Error duplicado
+                        </p>
+
+                        <p v-else-if="error" class="validation-error">
+                          {{ error }}
+                        </p>
+
                       </div>
-                      <div class="form-group mr-20">
+                      <div 
+                        class="form-group mr-20"
+                        :class="[
+                          'mb-10',
+                          { 'form-group--error': noIncluido.moneda.$error },
+                        ]"
+                      >
                         <label class="semi-bold label-form">Moneda</label>
                         <select
                           class="form-control"
-                          v-model="noIncluido.moneda"
+                          v-model.trim="noIncluido.moneda.$model"
+                          @blur="noIncluido.moneda.$touch"
                         >
                           <option
                             v-for="(typeMoney, index) in typesMoney"
@@ -930,12 +1094,28 @@
                             {{ typeMoney }}
                           </option>
                         </select>
+                        <p
+                          v-if="noIncluido.moneda.$error && !noIncluido.moneda.required"
+                          class="validation-error"
+                        >
+                          Error de entrada
+                        </p>
+                        <p v-else-if="error" class="validation-error">
+                          {{ error }}
+                        </p>
                       </div>
-                      <div class="form-group mr-20">
+                      <div 
+                        class="form-group mr-20"
+                        :class="[
+                          'mb-10',
+                          { 'form-group--error': noIncluido.tipoDescuento.$error },
+                        ]"
+                      >
                         <label class="semi-bold label-form">Tipo</label>
                         <select
                           class="form-control"
-                          v-model="noIncluido.tipoDescuento"
+                          v-model.trim="noIncluido.tipoDescuento.$model"
+                          @blur="noIncluido.tipoDescuento.$touch"
                         >
                           <option
                             v-for="(typeDiscount, index) in typesDiscount"
@@ -945,22 +1125,56 @@
                             {{ typeDiscount }}
                           </option>
                         </select>
+
+                        <p
+                          v-if="noIncluido.tipoDescuento.$error && !noIncluido.tipoDescuento.required"
+                          class="validation-error"
+                        >
+                          Error de entrada
+                        </p>
+                        <p v-else-if="error" class="validation-error">
+                          {{ error }}
+                        </p>
+
                       </div>
-                      <div class="form-group mr-20">
+                      <div 
+                        class="form-group mr-20"
+                        :class="[
+                          'mb-10',
+                          { 'form-group--error': noIncluido.valor.$error },
+                        ]"
+                      >
                         <label class="semi-bold label-form">Valor</label>
                         <input
                           type="number"
                           min="0"
                           class="form-control wd-100"
                           placeholder="Ej: 25000"
-                          v-model="noIncluido.valor"
+                          v-model.trim="noIncluido.valor.$model"
+                          @blur="noIncluido.valor.$touch"
                         />
+                        <p
+                          v-if="noIncluido.valor.$error && !noIncluido.valor.required"
+                          class="validation-error"
+                        >
+                          Error de entrada
+                        </p>
+                        <p v-else-if="error" class="validation-error">
+                          {{ error }}
+                        </p>
                       </div>
-                      <div class="form-group">
+                      <div 
+                        class="form-group"
+                        :class="[
+                          'mb-10',
+                          { 'form-group--error': noIncluido.descripcion.$error },
+                        ]"
+                      >
                         <label class="semi-bold label-form">Descripción</label>
                         <select
                           class="form-control"
-                          v-model="noIncluido.descripcion"
+                          v-model.trim="noIncluido.descripcion.$model"
+                          @blur="noIncluido.descripcion.$touch"
                         >
                           <option
                             v-for="(
@@ -972,6 +1186,16 @@
                             {{ descriptionCharge.nombre }}
                           </option>
                         </select>
+                        <p
+                          v-if="noIncluido.descripcion.$error && !noIncluido.descripcion.required"
+                          class="validation-error"
+                        >
+                          Error de entrada
+                        </p>
+                        <p v-else-if="error" class="validation-error">
+                          {{ error }}
+                        </p>
+
                         <svg
                           v-if="index > 0"
                           height="512pt"
@@ -1018,15 +1242,45 @@
                   <div class="add-wrap">
                     <div
                       class="input-add fwp"
-                      v-for="(adicional, index) in adicionales"
+                      v-for="(adicional, index) in $v.adicionales.$each.$iter"
                       :key="index"
                     >
-                      <input
+                      <!-- <input
                         type="text"
                         placeholder="ej: Tasa de turismo: $ 115.000. Total por estadía"
                         class="form-control col9"
-                        v-model="adicional.descripcion"
+                        v-model.trim="adicional.descripcion.$model"
                       />
+                      <div class="error" v-if="!adicional.descripcion.required">Fill the fields.</div> -->
+                        
+                        
+                        <!-- v-model="adicional.descripcion" -->
+
+                    <div
+                      :class="[
+                        'mb-10',
+                        'col9',
+                        { 'form-group--error': adicional.descripcion.$error },
+                      ]"
+                    >
+                      <input
+                        v-model.trim="adicional.descripcion.$model"
+                        class="form-control"
+                        type="text"
+                        placeholder="ej: Tasa de turismo: $ 115.000. Total por estadía"
+                        @blur="$v.adicionales.$touch"
+                      />
+                      <p
+                        v-if="adicional.descripcion.$error && !adicional.descripcion.required"
+                        class="validation-error"
+                      >
+                        Error de entrada
+                      </p>
+                      <p v-else-if="error" class="validation-error">
+                        {{ error }}
+                      </p>
+                    </div>
+
                       <svg
                         v-if="index > 0"
                         height="512pt"
@@ -1041,6 +1295,7 @@
                         />
                       </svg>
                     </div>
+
                     <a @click="addAdditional">
                       <svg
                         version="1.1"
@@ -1083,7 +1338,8 @@
 
 <script>
 import service from "@/services/service.js";
-//import { numeric } from "vuelidate/lib/validators";
+// import { numeric } from "vuelidate/lib/validators";
+import { required } from 'vuelidate/lib/validators'
 import shared from "@/shared";
 
 export default {
@@ -1096,7 +1352,12 @@ export default {
       options: {},
       cancelaciones: [{ dias: "", tipoDescuento: "", valor: "" }],
       cus_cancelation: [],
+      tarifasGroup:[],
       newGroup:[],
+      newTarifasGroup:[],
+      cTable:[],
+      cTableTarifas:[],
+      show: false,
       ocupaciones: [{ maxAdultos: "", maxNinos: "", numeroPersonas: "" }],
       tarifas: [
         {
@@ -1120,6 +1381,7 @@ export default {
           valor: "",
         },
       ],
+      incluidos_duplicated: false,
       noIncluidos: [
         {
           cargo: "",
@@ -1130,6 +1392,7 @@ export default {
           valor: "",
         },
       ],
+      noIncluidos_duplicated: false,
       adicionales: [{ descripcion: "" }],
       typesDiscount: [],
       typesCharge: [],
@@ -1142,6 +1405,7 @@ export default {
       typesMoney: [],
       menuname: "",
       links: {},
+      error: "",
     };
   },
   provide() {
@@ -1150,6 +1414,96 @@ export default {
     };
   },
   validations: {
+    adicionales: {
+      required,
+      $each: {
+        descripcion: {
+          required
+        }
+      }
+    },
+    incluidos: {
+      required,
+      $each:{
+        cargo: {
+          required,
+          isUnique(value) {
+            // standalone validator ideally should not assume a field is required
+            if (value === '') return true
+
+            let arr = this.$v.incluidos.$each
+            let count = this.$refs.ref_incluidos.childElementCount
+            let c_val = arr[count-1].$model.cargo
+            let flag = false
+            for(let i = 0; i < count-1; i++) {
+              if(c_val == arr[i].$model.cargo){
+                flag = true
+                break;
+              }
+            }
+            if(flag) 
+              return false
+            else
+              return true
+          }
+        },
+        descripcion: {
+          required
+        },
+        moneda: {
+          required
+        },
+        tipoDescuento: {
+          required
+        },
+        valor: {
+          required
+        },
+      }
+          
+    },
+
+    noIncluidos: {
+      required,
+      $each:{
+        cargo: {
+          required,
+          isUnique(value) {
+            // standalone validator ideally should not assume a field is required
+            if (value === '') return true
+
+            let arr = this.$v.noIncluidos.$each
+            let count = this.$refs.ref_noIncluidos.childElementCount
+            let c_val = arr[count-1].$model.cargo
+            let flag = false
+            for(let i = 0; i < count-1; i++) {
+              if(c_val == arr[i].$model.cargo){
+                flag = true
+                break;
+              }
+            }
+            if(flag) 
+              return false
+            else
+              return true
+          }
+        },
+        descripcion: {
+          required
+        },
+        moneda: {
+          required
+        },
+        tipoDescuento: {
+          required
+        },
+        valor: {
+          required
+        },
+      }
+          
+    },
+
     /*     noIncluidos: {
       $each: {
         precio: {
@@ -1158,6 +1512,7 @@ export default {
       },
     }, */
   },
+
   async beforeMount() {
     this.request = true;
     const response = await service.get(
@@ -1182,8 +1537,11 @@ export default {
 
     this.getData();
 
-    let keyValue = "option_1"
+    let keyValue = this.getInitOption();
     this.groupData(keyValue)
+
+    let keyValueTarifas = this.getInitOptionTarifas()
+    this.groupDataTarifas(keyValueTarifas)
   },
   updated: function () {
     this.$nextTick(function () {
@@ -1198,6 +1556,42 @@ export default {
 
   },
   methods: {
+    toggle: function(event) {
+      event.target.classList.toggle("rotate");
+      // this.show = !this.show;
+    },
+    activeCollapse:function(vm){
+      console.log(vm.status);
+    },
+    toggle_rotate: function(e){
+      var svg_ele = e.target.parentElement.querySelector('svg')
+      if(svg_ele.classList.contains('rotate'))
+        svg_ele.classList.remove('rotate')
+      else
+        svg_ele.classList.add('rotate')
+    },
+    createTable(){
+      let cTable = []
+      for(let i in this.options){
+        let row = {}
+        row['id'] = this.options[i].id
+        row['title'] = this.options[i].nombre
+        let c_id = 'option_'+this.options[i].id
+        let flag = false
+        for(let n in this.cus_cancelation){
+          if(c_id == n){
+            for(let m in this.cus_cancelation[n]) row['t_data'] = this.cus_cancelation[n][m]
+            flag = true
+          }
+        }
+        if(!flag) row['t_data'] = []
+        cTable.push(row)
+      } 
+
+      this.cTable = cTable
+      this.$modal.hide('modal_cancelation')
+    },
+    
     onChange(event){
       let keyValue = event.target.value.replace('cancel_', '')
       this.groupData(keyValue)
@@ -1213,7 +1607,60 @@ export default {
         }
       }
       if(!flag) this.newGroup = []
+    },
+    getInitOption(){
+      let keyValue
+      for(let r in this.cus_cancelation){
+          keyValue = r
+          break;
+      }
+      return keyValue
+    },
 
+    onChangeTarifas(event){
+      let keyValue = event.target.value.replace('child-rates_', '')
+      this.groupDataTarifas(keyValue)
+    },
+    groupDataTarifas(keyValue){
+      let flag = false
+      for(let r in this.tarifasGroup){
+        if(r == keyValue){
+          flag = true
+          for(let c in this.tarifasGroup[r]){
+            this.newTarifasGroup = this.tarifasGroup[r][c]
+          }
+        }
+      }
+      if(!flag) this.newTarifasGroup = []
+    },
+    getInitOptionTarifas(){
+      let keyValue
+      for(let r in this.tarifasGroup){
+          keyValue = r
+          break;
+      }
+      return keyValue
+    },
+    createTableTarifas(){
+      let cTableTarifas = []
+      for(let i in this.options){
+        let row = {}
+        row['id'] = this.options[i].id
+        row['title'] = this.options[i].nombre
+        let c_id = 'option_'+this.options[i].id
+        let flag = false
+        for(let n in this.tarifasGroup){
+          if(c_id == n){
+            for(let m in this.tarifasGroup[n]) row['t_data'] = this.tarifasGroup[n][m]
+            flag = true
+          }
+        }
+        if(!flag) row['t_data'] = []
+        cTableTarifas.push(row)
+      } 
+
+      this.cTableTarifas = cTableTarifas
+      this.$modal.hide('modal_child_rates')
     },
     async getData() {
       this.linksGeneration(this.$route.params.id, this.menuname);
@@ -1336,7 +1783,7 @@ export default {
       const moneyEachOption = this.options.map((option) => {
         return { moneda: option.moneda, opcion: option.id };
       });
-      console.log(moneyEachOption);
+      console.log("this is money:", moneyEachOption);
 
       //work Ok if I have data in tarifas but if tarifas is empty not work For example:
       //http://localhost:8080/condiciones-detalle/5
@@ -1371,8 +1818,6 @@ export default {
         this.cus_cancelation[r].push(cancelGroup[r])
       } 
 
-      console.log("THis is my value:", this.cus_cancelation)
-
       let newTarifas = [];
       for (let j = 0; j < this.options.length; j++) {
         for (let i = 0; i < tarifas.length; i++) {
@@ -1398,6 +1843,11 @@ export default {
         acc[`option_${item.opcion}`].push(item);
         return acc;
       }, {});
+
+      for(let r in tarifasGroup){
+        this.tarifasGroup[r] = this.tarifasGroup[r] || []
+        this.tarifasGroup[r].push(tarifasGroup[r])
+      }
       console.log(tarifasGroup);
 
       //Is good this. I need to load the div when the array is empty
@@ -1584,51 +2034,79 @@ export default {
         Number(this.ocupacion.maxAdultos) + Number(this.ocupacion.maxNinos);
     },
     addCancellation() {
-      this.cancelaciones.push({ dias: "", tipoDescuento: "", valor: "" });
+      this.newGroup.push({ dias: "", moneda:'cop',nombre: "San Cipriano editado con vue", opcion: 1,tipo: "cancelacion", tipoDescuento: "porcentaje", valor: "" });
     },
     deleteCancellation(index) {
-      this.cancelaciones.splice(index, 1);
+      this.newGroup.splice(index, 1);
     },
     addRateKids() {
-      this.tarifas.push({
-        edadDesde: "",
-        edadHasta: "",
-        moneda: "",
+      let edadDesde = 0;
+      let edadHasta = 0;
+      for(let i in this.newTarifasGroup){
+        edadDesde = Number(this.newTarifasGroup[i].edadDesde)
+        edadHasta = Number(this.newTarifasGroup[i].edadHasta)
+      } 
+      let max = edadDesde > edadHasta?edadDesde:edadHasta
+      let newVal = max==0?1:max
+      newVal = max<17?(max+1):max
+      console.log(newVal)
+      this.newTarifasGroup.push({
+        edadDesde: newVal,
+        edadHasta: newVal,
+        moneda: "cop",
         opcion: "",
-        tipoDescuento: "",
+        tipoDescuento: "fijo",
         valor: "",
       });
     },
     deleteRateKids(index) {
-      this.tarifas.splice(index, 1);
+      this.newTarifasGroup.splice(index, 1);
     },
     addChargeIncluded() {
-      this.incluidos.push({
-        cargo: "",
-        descripcion: "",
-        moneda: "",
-        opcion: "",
-        tipoDescuento: "",
-        valor: "",
-      });
+      this.$v.$touch();
+      if(!this.$v.incluidos.$error){
+        this.incluidos.push({
+          cargo: "",
+          descripcion: "",
+          moneda: "",
+          // opcion: "",
+          tipoDescuento: "",
+          valor: "",
+        });
+      }else{
+        console.log("failed")
+      }
     },
     deleteChargeIncluded(index) {
-      this.incluidos.splice(index, 1);
+      let parentEle = this.$refs.ref_incluidos.childNodes
+      parentEle[index].remove()
+      this.incluidos.splice(index, 1)
     },
     addChargeNoIncluded() {
-      this.noIncluidos.push({
-        cargo: "",
-        descripcion: "",
-        moneda: "",
-        opcion: "",
-        tipoDescuento: "",
-        valor: "",
-      });
+      this.$v.$touch();
+      if(!this.$v.noIncluidos.$error){
+        this.noIncluidos.push({
+          cargo: "",
+          descripcion: "",
+          moneda: "",
+          opcion: "",
+          tipoDescuento: "",
+          valor: "",
+        });
+      }else{
+        console.log("failed")
+      }
+      
     },
     deleteChargeNoIncluded(index) {
+      let parentEle = this.$refs.ref_noIncluidos.childNodes
+      parentEle[index].remove()
       this.noIncluidos.splice(index, 1);
     },
     addAdditional() {
+      this.$v.$touch();
+      console.log(this.$v.adicionales.$error)
+      if(!this.$v.adicionales.$error)
       this.adicionales.push({ descripcion: "" });
     },
     deleteAdditional(index) {
@@ -1726,6 +2204,16 @@ export default {
 }
 .active_collapse .arrow-svg {
   transform: rotate(180deg);
+}
+
+.arrow-svg{
+  transform: rotate(0deg);
+  transition-duration: 0.3s;
+}
+
+.arrow-svg.rotate{
+  transform: rotate(180deg);
+  transition-duration: 0.3s;
 }
 .v-collapse-toggler {
   background: transparent;
