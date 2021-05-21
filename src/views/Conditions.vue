@@ -159,6 +159,7 @@
                             <input
                               type="checkbox"
                               id="checkbox_cancelation"
+                              @click="applyAllOption($event)"
                             /><label for="checkbox_cancelation"
                               >Aply all Options</label
                             >
@@ -314,7 +315,7 @@
                     <button
                       type="button"
                       class="cross"
-                      @click="$modal.hide('modal_occupancy')"
+                      @click="$modal.hide('e')"
                       title="Cerrar"
                     >
                       X
@@ -340,19 +341,16 @@
                             class="row fwp"
                             v-for="(ocupacion, index) in ocupaciones"
                             :key="index"
-                            v-show="
-                              shouldDisplayOccup(
-                                `occupancy_option_${ocupacion.opcion}`
-                              )
-                            "
                           >
-                            <div class="form-group mr-20">
+                            <div class="form-group mr-20" v-if="shouldDisplayOccup(`occupancy_option_${ocupacion.opcion}`)">
                               <label class="semi-bold label-form"
                                 >Máx adultos</label
                               >
                               <select
                                 v-model="ocupacion.maxAdultos"
-                                @click="sumOccupation"
+                                @change="sumOccupation"
+                                ref = "ref_maxAdultos"
+                                id="maxAdultos_id"
                                 class="form-control"
                               >
                                 <option value="1">1</option>
@@ -365,13 +363,15 @@
                                 <option value="8">8</option>
                               </select>
                             </div>
-                            <div class="form-group mr-20">
+                            <div class="form-group mr-20" v-if="shouldDisplayOccup(`occupancy_option_${ocupacion.opcion}`)">
                               <label class="semi-bold label-form"
                                 >Máx niños</label
                               >
                               <select
                                 v-model="ocupacion.maxNinos"
-                                @click="sumOccupation"
+                                @change="sumOccupation"
+                                id="maxNinos_id"
+                                ref = "ref_maxNinos"
                                 class="form-control"
                               >
                                 <option value="0">0</option>
@@ -381,13 +381,15 @@
                                 <option value="4">4</option>
                               </select>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group" v-if="shouldDisplayOccup(`occupancy_option_${ocupacion.opcion}`)">
                               <label class="semi-bold label-form"
                                 >Máx ocupación</label
                               >
                               <select
                                 v-model="ocupacion.numeroPersonas"
                                 class="form-control"
+                                id="numeroPersonas_id"
+                                ref = "ref_numeroPersonas"
                                 disabled
                               >
                                 <option value="1">1</option>
@@ -514,23 +516,14 @@
                                 class="form-control"
                                 v-model="tarifa.edadDesde"
                               >
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                                <option value="7">7</option>
-                                <option value="8">8</option>
-                                <option value="9">9</option>
-                                <option value="10">10</option>
-                                <option value="11">11</option>
-                                <option value="12">12</option>
-                                <option value="13">13</option>
-                                <option value="14">14</option>
-                                <option value="15">15</option>
-                                <option value="16">16</option>
-                                <option value="17">17</option>
+                                <option 
+                                  v-for="(option, index) in 17"
+                                  :value="option" 
+                                  :key="index"
+                                  v-show="option>=tarifa.edadDesde"
+                                >
+                                  {{option}}
+                                </option>
                               </select>
                             </div>
                             <div class="form-group mr-20">
@@ -541,23 +534,15 @@
                                 class="form-control"
                                 v-model="tarifa.edadHasta"
                               >
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                                <option value="7">7</option>
-                                <option value="8">8</option>
-                                <option value="9">9</option>
-                                <option value="10">10</option>
-                                <option value="11">11</option>
-                                <option value="12">12</option>
-                                <option value="13">13</option>
-                                <option value="14">14</option>
-                                <option value="15">15</option>
-                                <option value="16">16</option>
-                                <option value="17">17</option>
+                                <option 
+                                  v-for="(option, index) in 17"
+                                  :value="option" 
+                                  :key="index"
+                                  v-show="option>=tarifa.edadDesde"
+                                >
+                                  {{option}}
+                                </option>
+
                               </select>
                             </div>
                             <div class="form-group mr-20">
@@ -1358,6 +1343,7 @@ export default {
       cTable:[],
       cTableTarifas:[],
       show: false,
+      isAplied:false,
       ocupaciones: [{ maxAdultos: "", maxNinos: "", numeroPersonas: "" }],
       tarifas: [
         {
@@ -1542,6 +1528,9 @@ export default {
 
     let keyValueTarifas = this.getInitOptionTarifas()
     this.groupDataTarifas(keyValueTarifas)
+
+    this.createAddCancellationTable()
+    this.createTarifasTable()
   },
   updated: function () {
     this.$nextTick(function () {
@@ -1553,7 +1542,7 @@ export default {
     titleTemplate: "%s - Viaja y Descubre",
   },
   mounted(){
-
+    
   },
   methods: {
     toggle: function(event) {
@@ -1571,6 +1560,30 @@ export default {
         svg_ele.classList.add('rotate')
     },
     createTable(){
+      // if(this.isAplied){
+      //   let cTable = []
+      //   for(let i in this.options){
+      //     let row = {}
+      //     row['id'] = this.options[i].id
+      //     row['title'] = this.options[i].nombre
+      //     let c_id = 'option_'+this.options[i].id
+      //     let flag = false
+      //     for(let n in this.cus_cancelation){
+      //       if(c_id == n){
+      //         for(let m in this.cus_cancelation[n]) row['t_data'] = this.cus_cancelation[n][m]
+      //         flag = true
+      //       }
+      //     }
+      //     if(!flag) row['t_data'] = []
+      //     cTable.push(row)
+      //   } 
+      //   this.cTable = cTable
+      // }
+      
+      this.$modal.hide('modal_cancelation')
+    },
+
+    createAddCancellationTable(){
       let cTable = []
       for(let i in this.options){
         let row = {}
@@ -1587,14 +1600,15 @@ export default {
         if(!flag) row['t_data'] = []
         cTable.push(row)
       } 
-
       this.cTable = cTable
-      this.$modal.hide('modal_cancelation')
     },
     
     onChange(event){
       let keyValue = event.target.value.replace('cancel_', '')
       this.groupData(keyValue)
+    },
+    applyAllOption(event){
+      this.isAplied = event.target.checked
     },
     groupData(keyValue){
       let flag = false
@@ -1662,6 +1676,26 @@ export default {
       this.cTableTarifas = cTableTarifas
       this.$modal.hide('modal_child_rates')
     },
+    createTarifasTable(){
+      let cTableTarifas = []
+      for(let i in this.options){
+        let row = {}
+        row['id'] = this.options[i].id
+        row['title'] = this.options[i].nombre
+        let c_id = 'option_'+this.options[i].id
+        let flag = false
+        for(let n in this.tarifasGroup){
+          if(c_id == n){
+            for(let m in this.tarifasGroup[n]) row['t_data'] = this.tarifasGroup[n][m]
+            flag = true
+          }
+        }
+        if(!flag) row['t_data'] = []
+        cTableTarifas.push(row)
+      } 
+
+      this.cTableTarifas = cTableTarifas
+    },
     async getData() {
       this.linksGeneration(this.$route.params.id, this.menuname);
       const fisrtOptionId = this.options[0].id;
@@ -1678,6 +1712,8 @@ export default {
         ocupaciones.push(ocupacionObj);
       });
       this.ocupaciones = ocupaciones;
+
+      console.log("Ocupa:", this.ocupaciones)
 
       let cancelaciones = [];
       let tarifas = [];
@@ -2029,12 +2065,32 @@ export default {
     shouldDisplayOccup: function (value) {
       return this.selectedOccup === value;
     },
+    getSumOption(event){
+      event.target.value.replace('cancel_', '')
+    },
     sumOccupation() {
-      this.ocupaciones.numeroPersonas =
-        Number(this.ocupacion.maxAdultos) + Number(this.ocupacion.maxNinos);
+      console.log(this.selectedOccup)
+      var ext_id = Number(this.selectedOccup.replace('occupancy_option_', ''))
+      var index = 0
+      for(let r in this.ocupaciones){
+        if(this.ocupaciones[r].opcion == ext_id){
+          index = r
+          break;
+        }
+      } 
+      var maxAdultos = document.getElementById("maxAdultos_id");
+      var maxNinos = document.getElementById("maxNinos_id");
+
+      let maxAdultos_val = maxAdultos.options[maxAdultos.selectedIndex].value
+      let maxNinos_val = maxNinos.options[maxNinos.selectedIndex].value
+
+      let sum = Number(maxAdultos_val)+Number(maxNinos_val)
+      this.ocupaciones[index].numeroPersonas = sum
     },
     addCancellation() {
       this.newGroup.push({ dias: "", moneda:'cop',nombre: "San Cipriano editado con vue", opcion: 1,tipo: "cancelacion", tipoDescuento: "porcentaje", valor: "" });
+      console.log("additional:", this.newGroup)
+      console.log("cTable:", this.cTable)
     },
     deleteCancellation(index) {
       this.newGroup.splice(index, 1);
