@@ -155,7 +155,7 @@
                             </svg>
                             <span class="text-add">Agregar otra política</span>
                           </a>
-                          <div class="checkbox-custom mt-5">
+                          <!-- <div class="checkbox-custom mt-5">
                             <input
                               type="checkbox"
                               id="checkbox_cancelation"
@@ -163,7 +163,7 @@
                             /><label for="checkbox_cancelation"
                               >Aply all Options</label
                             >
-                          </div>
+                          </div> -->
                           <div class="mt-20">
                             <button
                               @click="createTable"
@@ -613,14 +613,14 @@
                           </svg>
                           <span class="text-add">Agregar otra tarifa</span>
                         </a>
-                        <div class="checkbox-custom mt-5">
+                        <!-- <div class="checkbox-custom mt-5">
                           <input
                             type="checkbox"
                             id="checkbox_child_rates"
                           /><label for="checkbox_child_rates"
                             >Aply all options</label
                           >
-                        </div>
+                        </div> -->
                         <div class="mt-20">
                           <button
                             @click="createTableTarifas"
